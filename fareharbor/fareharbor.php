@@ -3,7 +3,7 @@
     Plugin Name: FareHarbor for WordPress
     Plugin URI: https://fareharbor.com/help/setup/wordpress-plugin/
     Description: Easily add FareHarbor reservation calendars and buttons to your site
-    Version: 3.6.11
+    Version: 3.6.12
     Author: FareHarbor
     Author URI: https://fareharbor.com
   */
@@ -43,7 +43,7 @@
     // This class is just a namespace for static methods & variables
     private function __construct() {}
 
-    public static $version = '3.6.11';
+    public static $version = '3.6.12';
 
     // Update the saved version number in the wp_options table
     // ===============================================
@@ -225,6 +225,7 @@
         'language' => self::get_option( 'fh_default_language', '' ),
         'branding' => '',
         'bookable_only' => '',
+        'package' => '',
 
       );
 
@@ -708,6 +709,8 @@
       if ( $args[ 'bookable_only' ])
         $out[ 'bookable_only' ] = $args[ 'bookable_only' ];
 
+      if ( $args[ 'package' ])
+        $out[ 'package' ] = $args[ 'package' ];
 
       if ( $include_flow && $args[ 'flow' ] )
         $out[ 'flow' ] = $args[ 'flow' ];
