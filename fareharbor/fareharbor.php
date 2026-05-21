@@ -3,7 +3,7 @@
     Plugin Name: FareHarbor for WordPress
     Plugin URI: https://fareharbor.com/help/setup/wordpress-plugin/
     Description: Easily add FareHarbor reservation calendars and buttons to your site
-    Version: 3.6.12
+    Version: 3.6.13
     Author: FareHarbor
     Author URI: https://fareharbor.com
   */
@@ -43,7 +43,7 @@
     // This class is just a namespace for static methods & variables
     private function __construct() {}
 
-    public static $version = '3.6.12';
+    public static $version = '3.6.13';
 
     // Update the saved version number in the wp_options table
     // ===============================================
@@ -443,7 +443,51 @@
       $script_src = self::calendar_script_src( $attrs );
 
       $maybe_error = self::maybe_handle_shortcode_error( $script_src );
-      return $maybe_error ? $maybe_error : "<script src=\"$script_src\"></script>";
+      return $maybe_error ? $maybe_error : self::calendar_shortcode_script_tag( $script_src );
+
+    }
+
+    private static function calendar_shortcode_script_tag( $script_src ) {
+
+      if ( self::calendar_script_src_has_language( $script_src ) ) {
+        // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- FareHarbor embed scripts must load at parser time.
+        return "<script src=\"$script_src\"></script>";
+      }
+
+      // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- FareHarbor embed scripts depend on parser-time document.write().
+      return '<script>(function() {
+  var scriptSrc = ' . wp_json_encode( $script_src ) . ';
+  var languages = navigator.languages;
+  var supportedLocales = {
+    "en-gb": "en-gb"
+  };
+
+  if ( !languages || !languages.length )
+    languages = [ navigator.language || navigator.userLanguage || "" ];
+
+  for ( var i = 0; i < languages.length; i++ ) {
+    var language = ( languages[i] || "" ).toLowerCase().replace( "_", "-" );
+    if ( !language )
+      continue;
+
+    var parts = language.split( "-" );
+    var locale = parts.length > 1 ? parts[0] + "-" + parts[1] : language;
+
+    if ( supportedLocales[ locale ] ) {
+      scriptSrc += ( scriptSrc.indexOf( "?" ) === -1 ? "?" : "&" ) + "language=" + encodeURIComponent( supportedLocales[ locale ] );
+      break;
+    }
+  }
+
+  document.write( "<script src=\"" + scriptSrc.replace( /"/g, "&quot;" ) + "\"><\/script>" );
+}());</script>';
+      // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+
+    }
+
+    private static function calendar_script_src_has_language( $script_src ) {
+
+      return (bool) preg_match( '/(?:\?|&)language=/', $script_src );
 
     }
 
