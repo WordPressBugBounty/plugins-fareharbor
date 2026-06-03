@@ -43,6 +43,9 @@ Use the `[fareharbor shortname="companyname"]`, `[lightframe shortname="companyn
 3. Lightframe booking overlay: customers book your activity without leaving your website
 
 == Changelog ==
+= 3.6.14 =
+* Fixed calendar embed script loading for browser locale detection on already-loaded pages
+
 = 3.6.13 =
 * Improved support for browser locale detection in calendar scripts
 * Updated tested up to version to 7.0

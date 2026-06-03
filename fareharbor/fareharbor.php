@@ -3,7 +3,7 @@
     Plugin Name: FareHarbor for WordPress
     Plugin URI: https://fareharbor.com/help/setup/wordpress-plugin/
     Description: Easily add FareHarbor reservation calendars and buttons to your site
-    Version: 3.6.13
+    Version: 3.6.14
     Author: FareHarbor
     Author URI: https://fareharbor.com
   */
@@ -43,7 +43,7 @@
     // This class is just a namespace for static methods & variables
     private function __construct() {}
 
-    public static $version = '3.6.13';
+    public static $version = '3.6.14';
 
     // Update the saved version number in the wp_options table
     // ===============================================
@@ -454,9 +454,10 @@
         return "<script src=\"$script_src\"></script>";
       }
 
-      // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- FareHarbor embed scripts depend on parser-time document.write().
+      // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript -- FareHarbor embed scripts depend on parser-time loading.
       return '<script>(function() {
   var scriptSrc = ' . wp_json_encode( $script_src ) . ';
+  var currentScript = document.currentScript;
   var languages = navigator.languages;
   var supportedLocales = {
     "en-gb": "en-gb"
@@ -479,7 +480,18 @@
     }
   }
 
-  document.write( "<script src=\"" + scriptSrc.replace( /"/g, "&quot;" ) + "\"><\/script>" );
+  if ( document.readyState === "loading" ) {
+    document.write( "<script src=\"" + scriptSrc.replace( /"/g, "&quot;" ) + "\"><\/script>" );
+    return;
+  }
+
+  var script = document.createElement( "script" );
+  script.src = scriptSrc;
+
+  if ( currentScript && currentScript.parentNode )
+    currentScript.parentNode.insertBefore( script, currentScript.nextSibling );
+  else
+    document.head.appendChild( script );
 }());</script>';
       // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 
